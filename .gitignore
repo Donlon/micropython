@@ -24,6 +24,7 @@
 ######################
 build/
 build-*/
+cmake-build-*/
 
 # Test failure outputs
 ######################
@@ -46,3 +47,8 @@ genrst/
 # MacOS desktop metadata files
 ######################
 .DS_Store
+
+# Working folder of IDEs
+######################
+.vscode/
+.idea/
