@@ -112,7 +112,7 @@ void mp_obj_print_helper(const mp_print_t *print, mp_obj_t o_in, mp_print_kind_t
     if (type->print != NULL) {
         type->print((mp_print_t *)print, o_in, kind);
     } else {
-        mp_printf(print, "<%q>", type->name);
+        mp_printf(print, "<%q at 0x%08x>", type->name, o_in);
     }
 }
 
