@@ -11,3 +11,8 @@ jobs:
       run: source tools/ci.sh && ci_rp2_setup
     - name: Build
       run: source tools/ci.sh && ci_rp2_build
+    - name: Upload build outputs
+      uses: actions/upload-artifact@v2
+      with:
+        name: pico-build
+        path: ${{GITHUB_WORKSPACE}}/ports/rp2/build-PICO
