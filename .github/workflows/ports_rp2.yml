@@ -15,4 +15,9 @@ jobs:
       uses: actions/upload-artifact@v2
       with:
         name: pico-build
-        path: ${{ github.workspace }}/ports/rp2/build-PICO
+        path: |
+          ${{ github.workspace }}/ports/rp2/build-PICO/firmware.bin
+          ${{ github.workspace }}/ports/rp2/build-PICO/firmware.elf
+          ${{ github.workspace }}/ports/rp2/build-PICO/firmware.elf.map
+          ${{ github.workspace }}/ports/rp2/build-PICO/firmware.hex
+          ${{ github.workspace }}/ports/rp2/build-PICO/firmware.uf2
