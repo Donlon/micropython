@@ -1,16 +1,6 @@
 name: rp2 port
 
-on:
-  push:
-  pull_request:
-    paths:
-      - '.github/workflows/*.yml'
-      - 'tools/**'
-      - 'py/**'
-      - 'extmod/**'
-      - 'lib/**'
-      - 'drivers/**'
-      - 'ports/rp2/**'
+on: push
 
 jobs:
   build:
