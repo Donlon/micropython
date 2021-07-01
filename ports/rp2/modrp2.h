@@ -29,6 +29,7 @@
 #include "py/obj.h"
 
 extern const mp_obj_type_t rp2_flash_type;
+extern const mp_obj_type_t rp2_memblocks_type;
 extern const mp_obj_type_t rp2_pio_type;
 extern const mp_obj_type_t rp2_state_machine_type;
 

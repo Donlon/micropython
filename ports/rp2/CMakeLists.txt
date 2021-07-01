@@ -99,6 +99,7 @@ set(MICROPY_SOURCE_PORT
     mphalport.c
     mpthreadport.c
     rp2_flash.c
+    rp2_memblocks.c
     rp2_pio.c
     tusb_port.c
     uart.c
@@ -124,6 +125,7 @@ set(MICROPY_SOURCE_QSTR
     ${PROJECT_SOURCE_DIR}/moduos.c
     ${PROJECT_SOURCE_DIR}/modutime.c
     ${PROJECT_SOURCE_DIR}/rp2_flash.c
+    ${PROJECT_SOURCE_DIR}/rp2_memblocks.c
     ${PROJECT_SOURCE_DIR}/rp2_pio.c
 )
 
