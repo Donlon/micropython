@@ -76,8 +76,8 @@ static const uint8_t usbd_desc_cfg[USBD_DESC_LEN] = {
 };
 
 static const char *const usbd_desc_str[] = {
-    [USBD_STR_MANUF] = "MicroPython",
-    [USBD_STR_PRODUCT] = "Board in FS mode",
+    [USBD_STR_MANUF] = "Raspberry Pi",
+    [USBD_STR_PRODUCT] = "RP2 MicroPython Command Line Interface",
     [USBD_STR_SERIAL] = NULL, // generated dynamically
     [USBD_STR_CDC] = "Board CDC",
 };
@@ -92,7 +92,7 @@ const uint8_t *tud_descriptor_configuration_cb(uint8_t index) {
 }
 
 const uint16_t *tud_descriptor_string_cb(uint8_t index, uint16_t langid) {
-    #define DESC_STR_MAX (20)
+    #define DESC_STR_MAX (40)
     static uint16_t desc_str[DESC_STR_MAX];
 
     uint8_t len;
