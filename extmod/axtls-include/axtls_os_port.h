@@ -3,7 +3,7 @@
  *
  * The MIT License (MIT)
  *
- * Copyright (c) 2013-2015 Damien P. George
+ * Copyright (c) 2021 Damien P. George
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -23,33 +23,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#ifndef MICROPY_INCLUDED_STM32_MODMACHINE_H
-#define MICROPY_INCLUDED_STM32_MODMACHINE_H
+#ifndef AXTLS_OS_PORT_H
+#define AXTLS_OS_PORT_H
 
-#include "py/obj.h"
+#include <errno.h>
+#include "py/stream.h"
+#include "extmod/crypto-algorithms/sha256.h"
 
-extern const mp_obj_type_t machine_adc_type;
-extern const mp_obj_type_t machine_timer_type;
-extern const mp_obj_type_t machine_hard_i2c_type;
-extern const mp_obj_type_t machine_i2s_type;
+#define SSL_CTX_MUTEX_INIT(mutex)
+#define SSL_CTX_MUTEX_DESTROY(mutex)
+#define SSL_CTX_LOCK(mutex)
+#define SSL_CTX_UNLOCK(mutex)
 
-void machine_init(void);
-void machine_deinit(void);
-void machine_i2s_init0();
+#define SOCKET_READ(s, buf, size)       mp_stream_posix_read((void *)s, buf, size)
+#define SOCKET_WRITE(s, buf, size)      mp_stream_posix_write((void *)s, buf, size)
+#define SOCKET_CLOSE(A)                 UNUSED
+#define SOCKET_ERRNO()                  errno
 
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_info_obj);
-MP_DECLARE_CONST_FUN_OBJ_0(machine_unique_id_obj);
-MP_DECLARE_CONST_FUN_OBJ_0(machine_reset_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_bootloader_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj);
+#define SHA256_CTX                      CRYAL_SHA256_CTX
+#define SHA256_Init(ctx)                sha256_init(ctx)
+#define SHA256_Update(ctx, buf, size)   sha256_update(ctx, buf, size)
+#define SHA256_Final(hash, ctx)         sha256_final(ctx, hash)
 
-MP_DECLARE_CONST_FUN_OBJ_0(machine_idle_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_lightsleep_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_deepsleep_obj);
+#define TTY_FLUSH()
 
-MP_DECLARE_CONST_FUN_OBJ_0(machine_disable_irq_obj);
-MP_DECLARE_CONST_FUN_OBJ_VAR_BETWEEN(machine_enable_irq_obj);
+#ifdef WDEV_HWRNG
+// For esp8266 port: use the hardware RNG.
+#define PLATFORM_RNG_U8()               (*WDEV_HWRNG)
+#endif
 
-MP_DECLARE_CONST_FUN_OBJ_0(pyb_irq_stats_obj);
-
-#endif // MICROPY_INCLUDED_STM32_MODMACHINE_H
+#endif // AXTLS_OS_PORT_H
