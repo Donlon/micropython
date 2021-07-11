@@ -176,10 +176,18 @@ Functions
 Constants
 ---------
 
-.. data:: e
-
-   base of the natural logarithm
-
 .. data:: pi
 
-   the ratio of a circle's circumference to its diameter
+   The ratio of a circle's circumference to its diameter
+
+.. data:: e
+
+   Base of the natural logarithm
+
+.. data:: inf
+
+   A floating-point positive infinity. (For negative infinity, use ``-math.inf``.) Equivalent to the output of ``float('inf')``.
+
+.. data:: nan
+
+   A number represents “not a number” (NaN) value. Equivalent to the output of ``float('nan')``.

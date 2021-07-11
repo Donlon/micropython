@@ -114,8 +114,10 @@ STATIC MP_DEFINE_CONST_FUN_OBJ_1(mp_cmath_sin_obj, mp_cmath_sin);
 
 STATIC const mp_rom_map_elem_t mp_module_cmath_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_cmath) },
-    { MP_ROM_QSTR(MP_QSTR_e), mp_const_float_e },
     { MP_ROM_QSTR(MP_QSTR_pi), mp_const_float_pi },
+    { MP_ROM_QSTR(MP_QSTR_e), mp_const_float_e },
+    { MP_ROM_QSTR(MP_QSTR_inf), mp_const_float_inf },
+    { MP_ROM_QSTR(MP_QSTR_nan), mp_const_float_nan },
     { MP_ROM_QSTR(MP_QSTR_phase), MP_ROM_PTR(&mp_cmath_phase_obj) },
     { MP_ROM_QSTR(MP_QSTR_polar), MP_ROM_PTR(&mp_cmath_polar_obj) },
     { MP_ROM_QSTR(MP_QSTR_rect), MP_ROM_PTR(&mp_cmath_rect_obj) },
