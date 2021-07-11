@@ -107,8 +107,17 @@ STATIC mp_obj_t machine_adc_read_u16(mp_obj_t self_in) {
 }
 MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_u16_obj, machine_adc_read_u16);
 
+// read_raw()
+STATIC mp_obj_t machine_adc_read_raw(mp_obj_t self_in) {
+    machine_adc_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    adc_select_input(self->channel);
+    return MP_OBJ_NEW_SMALL_INT(adc_read());
+}
+MP_DEFINE_CONST_FUN_OBJ_1(machine_adc_read_raw_obj, machine_adc_read_raw);
+
 STATIC const mp_rom_map_elem_t machine_adc_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_read_u16), MP_ROM_PTR(&machine_adc_read_u16_obj) },
+    { MP_ROM_QSTR(MP_QSTR_read_raw), MP_ROM_PTR(&machine_adc_read_raw_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_CORE_TEMP), MP_ROM_INT(ADC_CHANNEL_TEMPSENSOR) },
 };
