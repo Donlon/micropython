@@ -86,6 +86,7 @@
 #define MICROPY_PY_ALL_SPECIAL_METHODS          (1)
 #define MICROPY_PY_REVERSE_SPECIAL_METHODS      (1)
 #define MICROPY_PY_BUILTINS_COMPILE             (1)
+#define MICROPY_PY_BUILTINS_EXECFILE            (1)
 #define MICROPY_PY_BUILTINS_INPUT               (1)
 #define MICROPY_PY_BUILTINS_POW3                (1)
 #define MICROPY_PY_BUILTINS_HELP                (1)
