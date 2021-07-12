@@ -31,14 +31,19 @@
 #include "modrp2.h"
 #include "pico/binary_info.h"
 
+#include <malloc.h>
+
 #define BLOCK_SIZE_BYTES   256
 #define MAX_MEM_SIZE_BYTES (32 * 1024) // 32k
 
 typedef struct _rp2_memblocks_obj_t {
     mp_obj_base_t base;
     uint32_t size;
-    uint8_t mem_base[0];
+    uint8_t *mem_base;
 } rp2_memblocks_obj_t;
+
+uint8_t *memblocks_ptr = NULL;
+uint32_t memblocks_size = 0;
 
 STATIC mp_obj_t rp2_memblocks_make_new(const mp_obj_type_t *type, size_t n_args, size_t n_kw, const mp_obj_t *all_args) {
     static const mp_arg_t allowed_args[] = {
@@ -59,13 +64,23 @@ STATIC mp_obj_t rp2_memblocks_make_new(const mp_obj_type_t *type, size_t n_args,
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("memory size should be at least %d"), BLOCK_SIZE_BYTES);
     }
     mem_size &= ~(BLOCK_SIZE_BYTES - 1);
-    rp2_memblocks_obj_t *memblocks = m_malloc(sizeof(rp2_memblocks_obj_t) + mem_size);
+    if (memblocks_ptr) {
+        if (mem_size != memblocks_size) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("memory size %d is different from previous %d"),
+                              mem_size, memblocks_size);
+        }
+    } else {
+        memblocks_size = mem_size;
+        memblocks_ptr = malloc(mem_size);
+        memset(memblocks_ptr, 0, mem_size);
+    }
+    rp2_memblocks_obj_t *memblocks = m_new_obj(rp2_memblocks_obj_t);
     if (!memblocks) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("can not allocate memory blocks"));
     }
     memblocks->base.type = &rp2_memblocks_type;
-    memblocks->size = mem_size;
-    memset(memblocks->mem_base, 0, mem_size);
+    memblocks->size = memblocks_size;
+    memblocks->mem_base = memblocks_ptr;
     return MP_OBJ_FROM_PTR(memblocks);
 }
 
