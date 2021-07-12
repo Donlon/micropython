@@ -33,12 +33,13 @@
 
 #include <malloc.h>
 
-#define BLOCK_SIZE_BYTES   256
+#define BLOCK_SIZE_BYTES   512
 #define MAX_MEM_SIZE_BYTES (32 * 1024) // 32k
 
 typedef struct _rp2_memblocks_obj_t {
     mp_obj_base_t base;
     uint32_t size;
+    bool first_created;
     uint8_t *mem_base;
 } rp2_memblocks_obj_t;
 
@@ -57,26 +58,25 @@ STATIC mp_obj_t rp2_memblocks_make_new(const mp_obj_type_t *type, size_t n_args,
     if (mem_size < 0) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid memory size %d"), mem_size);
     }
-    if (mem_size >= MAX_MEM_SIZE_BYTES) {
+    if (mem_size > MAX_MEM_SIZE_BYTES) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("memory size %d too large"), mem_size);
     }
     if (mem_size < BLOCK_SIZE_BYTES) {
         mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("memory size should be at least %d"), BLOCK_SIZE_BYTES);
     }
     mem_size &= ~(BLOCK_SIZE_BYTES - 1);
+    rp2_memblocks_obj_t *memblocks = m_new_obj(rp2_memblocks_obj_t);
     if (memblocks_ptr) {
         if (mem_size != memblocks_size) {
             mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("memory size %d is different from previous %d"),
                               mem_size, memblocks_size);
         }
+        memblocks->first_created = false;
     } else {
         memblocks_size = mem_size;
         memblocks_ptr = malloc(mem_size);
+        memblocks->first_created = true;
         memset(memblocks_ptr, 0, mem_size);
-    }
-    rp2_memblocks_obj_t *memblocks = m_new_obj(rp2_memblocks_obj_t);
-    if (!memblocks) {
-        mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("can not allocate memory blocks"));
     }
     memblocks->base.type = &rp2_memblocks_type;
     memblocks->size = memblocks_size;
@@ -102,10 +102,7 @@ STATIC mp_obj_t rp2_memblocks_writeblocks(size_t n_args, const mp_obj_t *args) {
     uint32_t offset = mp_obj_get_int(args[1]) * BLOCK_SIZE_BYTES;
     mp_buffer_info_t bufinfo;
     mp_get_buffer_raise(args[2], &bufinfo, MP_BUFFER_READ);
-    if (n_args == 3) {
-        memset(self->mem_base + offset, 0, bufinfo.len);
-        // TODO check return value
-    } else {
+    if (n_args == 4) {
         offset += mp_obj_get_int(args[3]);
     }
     memcpy(self->mem_base + offset, bufinfo.buf, bufinfo.len);
@@ -129,9 +126,6 @@ STATIC mp_obj_t rp2_memblocks_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t 
         case MP_BLOCKDEV_IOCTL_BLOCK_SIZE:
             return MP_OBJ_NEW_SMALL_INT(BLOCK_SIZE_BYTES);
         case MP_BLOCKDEV_IOCTL_BLOCK_ERASE: {
-            uint32_t offset = mp_obj_get_int(arg_in) * BLOCK_SIZE_BYTES;
-            memset(self->mem_base + offset, 0, BLOCK_SIZE_BYTES);
-            // TODO check return value
             return MP_OBJ_NEW_SMALL_INT(0);
         }
         default:
@@ -140,10 +134,21 @@ STATIC mp_obj_t rp2_memblocks_ioctl(mp_obj_t self_in, mp_obj_t cmd_in, mp_obj_t 
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_3(rp2_memblocks_ioctl_obj, rp2_memblocks_ioctl);
 
+STATIC mp_obj_t rp2_memblocks_first_created(mp_obj_t self_in) {
+    rp2_memblocks_obj_t *self = MP_OBJ_TO_PTR(self_in);
+    if (self->first_created) {
+        return mp_const_true;
+    } else {
+        return mp_const_false;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_1(rp2_memblocks_first_created_obj, rp2_memblocks_first_created);
+
 STATIC const mp_rom_map_elem_t rp2_memblocks_locals_dict_table[] = {
     { MP_ROM_QSTR(MP_QSTR_readblocks), MP_ROM_PTR(&rp2_memblocks_readblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_writeblocks), MP_ROM_PTR(&rp2_memblocks_writeblocks_obj) },
     { MP_ROM_QSTR(MP_QSTR_ioctl), MP_ROM_PTR(&rp2_memblocks_ioctl_obj) },
+    { MP_ROM_QSTR(MP_QSTR_first_created), MP_ROM_PTR(&rp2_memblocks_first_created_obj) },
 };
 STATIC MP_DEFINE_CONST_DICT(rp2_memblocks_locals_dict, rp2_memblocks_locals_dict_table);
 
