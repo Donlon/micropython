@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
             goto soft_reset_exit;
         }
         if (pyexec_mode_kind == PYEXEC_MODE_FRIENDLY_REPL) {
-            ret = pyexec_file_if_exists("main.py");
+            ret = pyexec_file_if_exists("loader.py");
             if (ret & PYEXEC_FORCED_EXIT) {
                 goto soft_reset_exit;
             }
