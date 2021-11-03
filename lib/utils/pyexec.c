@@ -672,6 +672,10 @@ int pyexec_file(const char *filename) {
     return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_FILENAME);
 }
 
+int pyexec_file_raw(const char *filename) {
+    return parse_compile_execute(filename, MP_PARSE_FILE_INPUT, EXEC_FLAG_SOURCE_IS_FILENAME | EXEC_FLAG_SOURCE_IS_RAW_CODE);
+}
+
 int pyexec_file_if_exists(const char *filename) {
     #if MICROPY_MODULE_FROZEN
     if (mp_frozen_stat(filename) == MP_IMPORT_STAT_FILE) {
