@@ -100,6 +100,34 @@ STATIC mp_obj_t machine_freq(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_freq_obj, 0, 1, machine_freq);
 
+STATIC mp_obj_t machine_clock(size_t n_args, const mp_obj_t *args) {
+    if (n_args == 1) {
+        mp_int_t index = mp_obj_get_int(args[0]);
+        if (index < 0 || index >= CLK_COUNT) {
+            mp_raise_msg_varg(&mp_type_ValueError, MP_ERROR_TEXT("invalid clock index %d"), index);
+        }
+        return MP_OBJ_NEW_SMALL_INT(clock_get_hz(index));
+    } else {
+        mp_int_t clock_index = mp_obj_get_int(args[0]);
+        mp_int_t freq = mp_obj_get_int(args[1]);
+
+        bool res = clock_configure(clock_index,
+                                   clk_sys,
+                                   0,
+                                   clock_get_hz(clk_sys),
+                                   freq);
+        if (!res) {
+            mp_raise_ValueError(MP_ERROR_TEXT("cannot change frequency"));
+        }
+        #if MICROPY_HW_ENABLE_UART_REPL
+        setup_default_uart();
+        mp_uart_init();
+        #endif
+        return mp_const_none;
+    }
+}
+STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(machine_clock_obj, 1, 2, machine_clock);
+
 STATIC mp_obj_t machine_idle(void) {
     best_effort_wfe_or_timeout(make_timeout_time_ms(1));
     return mp_const_none;
@@ -145,6 +173,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_reset_cause),         MP_ROM_PTR(&machine_reset_cause_obj) },
     { MP_ROM_QSTR(MP_QSTR_bootloader),          MP_ROM_PTR(&machine_bootloader_obj) },
     { MP_ROM_QSTR(MP_QSTR_freq),                MP_ROM_PTR(&machine_freq_obj) },
+    { MP_ROM_QSTR(MP_QSTR_clock),               MP_ROM_PTR(&machine_clock_obj) },
 
     { MP_ROM_QSTR(MP_QSTR_idle),                MP_ROM_PTR(&machine_idle_obj) },
     { MP_ROM_QSTR(MP_QSTR_lightsleep),          MP_ROM_PTR(&machine_lightsleep_obj) },
