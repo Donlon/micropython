@@ -99,12 +99,14 @@ NORETURN void esp_exceptions_helper(esp_err_t e) {
 // thread to the main MicroPython task.  It must not raise any Python exceptions.
 static esp_err_t event_handler(void *ctx, system_event_t *event) {
     switch (event->event_id) {
+        #if MICROPY_PY_NETWORK_WLAN
         case SYSTEM_EVENT_STA_START:
         case SYSTEM_EVENT_STA_CONNECTED:
         case SYSTEM_EVENT_STA_GOT_IP:
         case SYSTEM_EVENT_STA_DISCONNECTED:
             network_wlan_event_handler(event);
             break;
+        #endif
         case SYSTEM_EVENT_GOT_IP6:
             ESP_LOGI("network", "Got IPv6");
             break;
@@ -212,6 +214,13 @@ STATIC mp_obj_t esp_phy_mode(size_t n_args, const mp_obj_t *args) {
 }
 STATIC MP_DEFINE_CONST_FUN_OBJ_VAR_BETWEEN(esp_phy_mode_obj, 0, 1, esp_phy_mode);
 
+#if ESP_IDF_VERSION >= ESP_IDF_VERSION_VAL(4, 3, 0)
+#define TEST_WIFI_AUTH_MAX 9
+#else
+#define TEST_WIFI_AUTH_MAX 8
+#endif
+_Static_assert(WIFI_AUTH_MAX == TEST_WIFI_AUTH_MAX, "Synchronize WIFI_AUTH_XXX constants with the ESP-IDF. Look at esp-idf/components/esp_wifi/include/esp_wifi_types.h");
+
 STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR___name__), MP_ROM_QSTR(MP_QSTR_network) },
     { MP_ROM_QSTR(MP_QSTR___init__), MP_ROM_PTR(&esp_initialize_obj) },
@@ -220,7 +229,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_WLAN), MP_ROM_PTR(&get_wlan_obj) },
     #endif
 
-    #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 1) && (CONFIG_IDF_TARGET_ESP32)
+    #if MICROPY_PY_NETWORK_LAN
     { MP_ROM_QSTR(MP_QSTR_LAN), MP_ROM_PTR(&get_lan_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_PPP), MP_ROM_PTR(&ppp_make_new_obj) },
@@ -235,6 +244,7 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_MODE_11B), MP_ROM_INT(WIFI_PROTOCOL_11B) },
     { MP_ROM_QSTR(MP_QSTR_MODE_11G), MP_ROM_INT(WIFI_PROTOCOL_11G) },
     { MP_ROM_QSTR(MP_QSTR_MODE_11N), MP_ROM_INT(WIFI_PROTOCOL_11N) },
+    { MP_ROM_QSTR(MP_QSTR_MODE_LR), MP_ROM_INT(WIFI_PROTOCOL_LR) },
 
     { MP_ROM_QSTR(MP_QSTR_AUTH_OPEN), MP_ROM_INT(WIFI_AUTH_OPEN) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WEP), MP_ROM_INT(WIFI_AUTH_WEP) },
@@ -242,14 +252,16 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_PSK), MP_ROM_INT(WIFI_AUTH_WPA2_PSK) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA_WPA2_PSK), MP_ROM_INT(WIFI_AUTH_WPA_WPA2_PSK) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_ENTERPRISE), MP_ROM_INT(WIFI_AUTH_WPA2_ENTERPRISE) },
-    #if 0 // TODO: Remove this #if/#endif when lastest ISP IDF will be used
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA3_PSK), MP_ROM_INT(WIFI_AUTH_WPA3_PSK) },
     { MP_ROM_QSTR(MP_QSTR_AUTH_WPA2_WPA3_PSK), MP_ROM_INT(WIFI_AUTH_WPA2_WPA3_PSK) },
+    #if ESP_IDF_VERSION > ESP_IDF_VERSION_VAL(4, 3, 0)
+    { MP_ROM_QSTR(MP_QSTR_AUTH_WAPI_PSK), MP_ROM_INT(WIFI_AUTH_WAPI_PSK) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_AUTH_MAX), MP_ROM_INT(WIFI_AUTH_MAX) },
     #endif
 
-    #if (ESP_IDF_VERSION_MAJOR == 4) && (ESP_IDF_VERSION_MINOR >= 1) && (CONFIG_IDF_TARGET_ESP32)
+    #if MICROPY_PY_NETWORK_LAN
+    { MP_ROM_QSTR(MP_QSTR_PHY_LAN8710), MP_ROM_INT(PHY_LAN8710) },
     { MP_ROM_QSTR(MP_QSTR_PHY_LAN8720), MP_ROM_INT(PHY_LAN8720) },
     { MP_ROM_QSTR(MP_QSTR_PHY_IP101), MP_ROM_INT(PHY_IP101) },
     { MP_ROM_QSTR(MP_QSTR_PHY_RTL8201), MP_ROM_INT(PHY_RTL8201) },
@@ -257,6 +269,20 @@ STATIC const mp_rom_map_elem_t mp_module_network_globals_table[] = {
     #if ESP_IDF_VERSION_MINOR >= 3
     // PHY_KSZ8041 is new in ESP-IDF v4.3
     { MP_ROM_QSTR(MP_QSTR_PHY_KSZ8041), MP_ROM_INT(PHY_KSZ8041) },
+    #endif
+    #if ESP_IDF_VERSION_MINOR >= 4
+    // PHY_KSZ8081 is new in ESP-IDF v4.4
+    { MP_ROM_QSTR(MP_QSTR_PHY_KSZ8081), MP_ROM_INT(PHY_KSZ8081) },
+    #endif
+
+    #if CONFIG_ETH_SPI_ETHERNET_KSZ8851SNL
+    { MP_ROM_QSTR(MP_QSTR_PHY_KSZ8851SNL), MP_ROM_INT(PHY_KSZ8851SNL) },
+    #endif
+    #if CONFIG_ETH_SPI_ETHERNET_DM9051
+    { MP_ROM_QSTR(MP_QSTR_PHY_DM9051), MP_ROM_INT(PHY_DM9051) },
+    #endif
+    #if CONFIG_ETH_SPI_ETHERNET_W5500
+    { MP_ROM_QSTR(MP_QSTR_PHY_W5500), MP_ROM_INT(PHY_W5500) },
     #endif
 
     { MP_ROM_QSTR(MP_QSTR_ETH_INITIALIZED), MP_ROM_INT(ETH_INITIALIZED)},
@@ -285,3 +311,7 @@ const mp_obj_module_t mp_module_network = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&mp_module_network_globals,
 };
+
+// Note: This port doesn't define MICROPY_PY_NETWORK so this will not conflict
+// with the common implementation provided by extmod/modnetwork.c.
+MP_REGISTER_MODULE(MP_QSTR_network, mp_module_network);

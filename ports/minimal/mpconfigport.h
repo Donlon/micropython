@@ -15,27 +15,15 @@
 #define MICROPY_HELPER_REPL               (1)
 #define MICROPY_MODULE_FROZEN_MPY         (1)
 #define MICROPY_ENABLE_EXTERNAL_IMPORT    (1)
-#define MICROPY_PY_MATH                   (1)
 
 #define MICROPY_ALLOC_PATH_MAX            (256)
 #define MICROPY_ALLOC_PARSE_CHUNK_INIT    (16)
-
-#define MICROPY_COMP_CONST_FOLDING        (1)
-#define MICROPY_COMP_CONST_LITERAL        (1)
-#define MICROPY_FULL_CHECKS               (1)
-#define MICROPY_MULTIPLE_INHERITANCE      (1)
-#define MICROPY_PY_GENERATOR_PEND_THROW   (1)
-#define MICROPY_PY_BUILTINS_RANGE_ATTRS   (1)
 
 // type definitions for the specific machine
 
 typedef intptr_t mp_int_t; // must be pointer size
 typedef uintptr_t mp_uint_t; // must be pointer size
 typedef long mp_off_t;
-
-// extra built in names to add to the global namespace
-#define MICROPY_PORT_BUILTINS \
-    { MP_ROM_QSTR(MP_QSTR_open), MP_ROM_PTR(&mp_builtin_open_obj) },
 
 // We need to provide a declaration/definition of alloca()
 #include <alloca.h>
@@ -53,6 +41,3 @@ typedef long mp_off_t;
 #endif
 
 #define MP_STATE_PORT MP_STATE_VM
-
-#define MICROPY_PORT_ROOT_POINTERS \
-    const char *readline_hist[8];

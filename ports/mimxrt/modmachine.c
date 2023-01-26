@@ -26,6 +26,7 @@
  */
 
 #include "py/runtime.h"
+#include "drivers/dht/dht.h"
 #include "extmod/machine_bitstream.h"
 #include "extmod/machine_mem.h"
 #include "extmod/machine_i2c.h"
@@ -36,9 +37,9 @@
 #include "led.h"
 #include "pin.h"
 #include "modmachine.h"
-#include "fsl_clock.h"
-#include "fsl_ocotp.h"
 #include "fsl_wdog.h"
+
+#if MICROPY_PY_MACHINE
 
 #include CPU_HEADER_H
 
@@ -52,9 +53,7 @@ typedef enum {
 
 STATIC mp_obj_t machine_unique_id(void) {
     unsigned char id[8];
-    OCOTP_Init(OCOTP, CLOCK_GetFreq(kCLOCK_IpgClk));
-    *(uint32_t *)&id[0] = OCOTP->CFG0;
-    *(uint32_t *)&id[4] = OCOTP->CFG1;
+    mp_hal_get_unique_id(id);
     return mp_obj_new_bytes(id, sizeof(id));
 }
 MP_DEFINE_CONST_FUN_OBJ_0(machine_unique_id_obj, machine_unique_id);
@@ -129,10 +128,14 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     #if MICROPY_PY_MACHINE_SDCARD
     { MP_ROM_QSTR(MP_QSTR_SDCard),              MP_ROM_PTR(&machine_sdcard_type) },
     #endif
+    { MP_ROM_QSTR(MP_QSTR_PWM),                 MP_ROM_PTR(&machine_pwm_type) },
     { MP_ROM_QSTR(MP_QSTR_Signal),              MP_ROM_PTR(&machine_signal_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftI2C),             MP_ROM_PTR(&mp_machine_soft_i2c_type) },
     { MP_ROM_QSTR(MP_QSTR_SoftSPI),             MP_ROM_PTR(&mp_machine_soft_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_I2C),                 MP_ROM_PTR(&machine_i2c_type) },
+    #if MICROPY_PY_MACHINE_I2S
+    { MP_ROM_QSTR(MP_QSTR_I2S),                 MP_ROM_PTR(&machine_i2s_type) },
+    #endif
     { MP_ROM_QSTR(MP_QSTR_SPI),                 MP_ROM_PTR(&machine_spi_type) },
     { MP_ROM_QSTR(MP_QSTR_UART),                MP_ROM_PTR(&machine_uart_type) },
     { MP_ROM_QSTR(MP_QSTR_WDT),                 MP_ROM_PTR(&machine_wdt_type) },
@@ -146,6 +149,7 @@ STATIC const mp_rom_map_elem_t machine_module_globals_table[] = {
     { MP_ROM_QSTR(MP_QSTR_bitstream),           MP_ROM_PTR(&machine_bitstream_obj) },
     #endif
     { MP_ROM_QSTR(MP_QSTR_time_pulse_us),       MP_ROM_PTR(&machine_time_pulse_us_obj) },
+    { MP_ROM_QSTR(MP_QSTR_dht_readinto),        MP_ROM_PTR(&dht_readinto_obj) },
 
     // Reset reasons
     { MP_ROM_QSTR(MP_QSTR_PWRON_RESET),         MP_ROM_INT(MP_PWRON_RESET) },
@@ -158,3 +162,7 @@ const mp_obj_module_t mp_module_machine = {
     .base = { &mp_type_module },
     .globals = (mp_obj_dict_t *)&machine_module_globals,
 };
+
+MP_REGISTER_MODULE(MP_QSTR_umachine, mp_module_machine);
+
+#endif // MICROPY_PY_MACHINE

@@ -38,17 +38,30 @@
 #define MOD_NETWORK_STA_IF (0)
 #define MOD_NETWORK_AP_IF (1)
 
+// Socket level option.
+#define MOD_NETWORK_SOL_SOCKET      (0x0FFF)
+
+// Common option flags per-socket.
+#define MOD_NETWORK_SO_REUSEADDR    (0x0004)
+#define MOD_NETWORK_SO_KEEPALIVE    (0x0008)
+#define MOD_NETWORK_SO_SNDTIMEO     (0x1005)
+#define MOD_NETWORK_SO_RCVTIMEO     (0x1006)
+
+#define MOD_NETWORK_SS_NEW          (0)
+#define MOD_NETWORK_SS_LISTENING    (1)
+#define MOD_NETWORK_SS_CONNECTED    (2)
+#define MOD_NETWORK_SS_CLOSED       (3)
+
 #if MICROPY_PY_LWIP
 struct netif;
+void mod_network_lwip_init(void);
 void mod_network_lwip_poll_wrapper(uint32_t ticks_ms);
 mp_obj_t mod_network_nic_ifconfig(struct netif *netif, size_t n_args, const mp_obj_t *args);
 #else
 
 struct _mod_network_socket_obj_t;
 
-typedef struct _mod_network_nic_type_t {
-    mp_obj_type_t base;
-
+typedef struct _mod_network_nic_protocol_t {
     // API for non-socket operations
     int (*gethostbyname)(mp_obj_t nic, const char *name, mp_uint_t len, uint8_t *ip_out);
 
@@ -66,21 +79,23 @@ typedef struct _mod_network_nic_type_t {
     int (*setsockopt)(struct _mod_network_socket_obj_t *socket, mp_uint_t level, mp_uint_t opt, const void *optval, mp_uint_t optlen, int *_errno);
     int (*settimeout)(struct _mod_network_socket_obj_t *socket, mp_uint_t timeout_ms, int *_errno);
     int (*ioctl)(struct _mod_network_socket_obj_t *socket, mp_uint_t request, mp_uint_t arg, int *_errno);
-} mod_network_nic_type_t;
+} mod_network_nic_protocol_t;
 
 typedef struct _mod_network_socket_obj_t {
     mp_obj_base_t base;
     mp_obj_t nic;
-    mod_network_nic_type_t *nic_type;
+    mod_network_nic_protocol_t *nic_protocol;
     uint32_t domain : 5;
     uint32_t type   : 5;
     uint32_t proto  : 5;
     uint32_t bound  : 1;
     int32_t fileno  : 16;
+    int32_t timeout;
+    mp_obj_t callback;
+    int32_t state   : 8;
     #if MICROPY_PY_USOCKET_EXTENDED_STATE
     // Extended socket state for NICs/ports that need it.
-    int32_t timeout;
-    void *state;
+    void *_private;
     #endif
 } mod_network_socket_obj_t;
 
