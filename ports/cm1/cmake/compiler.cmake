@@ -2,7 +2,7 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE "STATIC_LIBRARY")
 set(CMAKE_SYSTEM_NAME Generic)
 
 set(CFLAGS "-mthumb -mcpu=cortex-m1 -Wall -Wextra -g")
-set(CFLAGS "${CFLAGS} -fdata-sections -ffunction-sections -flto")
+set(CFLAGS "${CFLAGS} -fdata-sections -ffunction-sections -flto=auto")
 set(CXXFLAGS "${CFLAGS} -fno-exceptions")
 
 add_compile_options("$<$<CONFIG:Debug>:-DDEBUG>")
